@@ -34,8 +34,10 @@ function Host_init(db, onsuccess)
 
 	// Peer
 
-	host.files_list = function(files)
+    connection.addEventListener('files.list', function(files)
 	{
+	   files = JSON.parse(files)
+
 		// Check if we have already any of the files
 		// It's stupid to try to download it... and also give errors
 		db.sharepoints_getAll(null, function(filelist)
@@ -52,44 +54,43 @@ function Host_init(db, onsuccess)
 	
 			ui_updatefiles_peer(files)
 		})
-	}
+	})
 
 	if(onsuccess)
 		onsuccess(host);
 
 	// Host
 
-	host.peer_connected = function(socket_id)
+    connection.addEventListener('peer.connected', function(socket_id)
 	{
 		ui_peerstate("Peer connected!");
 
 		db.sharepoints_getAll(null, host._send_files_list)
 
 		info(socket_id + " joined!");
-	}
-	
-	host.peer_disconnected = function(data)
+	})
+
+    connection.addEventListener('peer.disconnected', function(data)
 	{
 		ui_peerstate("Peer disconnected.");
-	}
+	})
 
 	// Filereader support (be able to host files from the filesystem)
 	if(typeof FileReader == "undefined")
-	{
 		console.warn("'Filereader' is not available, can't be able to host files");
-		host.transfer_query_chunk = function(filename, chunk){}
-	}
 	else
-		host.transfer_query_chunk = function(filename, chunk)
+        connection.addEventListener('transfer.query_chunk',
+        function(filename, chunk)
 		{
 			var reader = new FileReader();
 				reader.onerror = function(evt)
 				{
-					console.error("host.transfer_query_chunk("+filename+", "+chunk+") = '"+evt.target.result+"'")
+					console.error("transfer.query_chunk("+filename+", "+chunk+") = '"+evt.target.result+"'")
 				}
 				reader.onload = function(evt)
 				{
-					connection.transfer_send_chunk(filename, chunk, evt.target.result);
+                    connection.emit('transfer.send_chunk',
+                                    filename, chunk, evt.target.result);
 				}
 
 			var start = chunk * chunksize;
@@ -103,7 +104,7 @@ function Host_init(db, onsuccess)
 
 				reader.readAsBinaryString(file.slice(start, stop));
 			})
-		}
+		})
 
 	// Peer
 
@@ -123,7 +124,8 @@ function Host_init(db, onsuccess)
 		window.URL.revokeObjectURL(save.href)
 	}
 
-	host.transfer_send_chunk = function(filename, chunk, data)
+    connection.addEventListener('transfer.send_chunk',
+    function(filename, chunk, data)
 	{
 		db.sharepoints_get(filename, function(file)
 		{
@@ -158,7 +160,8 @@ function Host_init(db, onsuccess)
 			    // Demand more data from one of the pending chunks
 		        db.sharepoints_put(file, function()
 		        {
-				    connection.transfer_query_chunk(file.name, getRandom(file.bitmap));
+                    connection.emit('transfer.query_chunk', file.name,
+                                                            getRandom(file.bitmap));
 				})
 			}
 			else
@@ -175,7 +178,7 @@ function Host_init(db, onsuccess)
 		        })
 			}
 		})
-	}
+	})
 
 	host._send_files_list = function(filelist)
 	{
@@ -184,7 +187,7 @@ function Host_init(db, onsuccess)
 		for(var i = 0, file; file = filelist[i]; i++)
 			files_send.push({"name": file.name, "size": file.size, "type": file.type});
 
-		connection.files_list(files_send);
+        connection.emit('files.list', JSON.stringify(files_send));
 	}
 
     host._transferbegin = function(file, onsuccess)
@@ -208,7 +211,7 @@ function Host_init(db, onsuccess)
             console.log("Transfer begin: '"+key+"' = "+JSON.stringify(file))
 
             // Demand data from the begining of the file
-            connection.transfer_query_chunk(key, getRandom(file.bitmap))
+            connection.emit('transfer.query_chunk', key, getRandom(file.bitmap))
         },
         function(errorCode)
         {
