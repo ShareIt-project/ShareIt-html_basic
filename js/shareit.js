@@ -26,13 +26,13 @@ window.addEventListener("load", function()
 	        var room = window.location.hash.substring(1)
 
 	        // Load websocket connection after IndexedDB is ready
-	        Protocol_init(new WebSocket('wss://localhost:8001'), room,
-            function(protocol)
+	        Transport_init(new WebSocket('wss://localhost:8001'), room,
+            function(transport)
             {
-                protocol.addEventListener('joiner.success', function()
+                transport.addEventListener('joiner.success', function()
 	            {
 	                // Add connection methods to host
-	                Host_onconnect(protocol, host, db)
+	                Host_onconnect(transport, host, db)
 
 	                function _updatefiles(filelist)
 	                {
@@ -73,7 +73,7 @@ window.addEventListener("load", function()
 	                    })
 	                })
 	            })
-		        protocol.addEventListener('joiner.error', function(type)
+		        transport.addEventListener('joiner.error', function(type)
 	            {
 	                switch(type)
 	                {
@@ -82,7 +82,7 @@ window.addEventListener("load", function()
 	                }
 	            })
 
-		        protocol.emit('joiner', room);
+		        transport.emit('joiner', room);
             })
 	    })
 	})
