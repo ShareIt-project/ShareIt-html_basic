@@ -21,7 +21,7 @@ function Host_init(db, onsuccess)
 	{
 		ui_peerstate("Peer connected!");
 
-		db.sharepoints_getAll(null, host._send_files_list)
+		db.sharepoints_getAll(null, transport._send_files_list)
 
 		info(socket_id + " joined!");
 	})
@@ -32,22 +32,6 @@ function Host_init(db, onsuccess)
 	})
 
 	// Peer
-
-	host._send_files_list = function(filelist)
-	{
-        // Stupid conversion because JSON.stringify() doesn't parse
-        // File objects (use them as plain objects in the best case)
-        // Maybe add a File.toString() method would do the trick,
-        // but later would not be able to store them on IndexedDB...
-        //
-        // I miss you Python :-(
-		var files_send = []
-
-		for(var i = 0, file; file = filelist[i]; i++)
-			files_send.push({"name": file.name, "size": file.size, "type": file.type});
-
-        connection.emit('fileslist.send', JSON.stringify(files_send));
-	}
 
     host._transferbegin = function(file, onsuccess)
     {

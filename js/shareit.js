@@ -36,7 +36,7 @@ window.addEventListener("load", function()
 
 	                function _updatefiles(filelist)
 	                {
-	                    host._send_files_list(filelist)
+	                    transport._send_files_list(filelist)
 
 	                    ui_updatefiles_host(filelist)
 	                }
@@ -60,7 +60,7 @@ window.addEventListener("load", function()
 	                    for(var i = 0, file; file = filelist[i]; i++)
 	                        db.sharepoints_add(file)
 
-	                    //host._send_files_list(filelist)   // Send just new files
+	                    //transport._send_files_list(filelist)   // Send just new files
 
 	                    db.sharepoints_getAll(null, _updatefiles)
 	                })
