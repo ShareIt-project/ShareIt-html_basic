@@ -1,3 +1,4 @@
 /transport.js
 /bitmap.js
 /FileWriter.polyfill.js
+/peer.js
