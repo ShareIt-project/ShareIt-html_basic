@@ -127,6 +127,7 @@ function Host_init(db, onsuccess)
 
             fw.write(byteArray.buffer)
 
+            // There're pending chunks, write and demand more
 			var pending_chunks = file.bitmap.length
 			if(pending_chunks)
 			{
@@ -143,9 +144,10 @@ function Host_init(db, onsuccess)
                                                             getRandom(file.bitmap));
 				})
 			}
+
+            // There are no more pending chunks, set file as fully downloaded
 			else
 			{
-				// There are no more chunks, set file as fully downloaded
 				delete file.bitmap;
 
 		        db.sharepoints_put(file, function()
