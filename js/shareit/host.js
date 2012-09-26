@@ -12,28 +12,6 @@ function Host_init(db, onsuccess)
 
 	// Peer
 
-    connection.addEventListener('files.list', function(files)
-	{
-	   files = JSON.parse(files)
-
-		// Check if we have already any of the files
-		// It's stupid to try to download it... and also give errors
-		db.sharepoints_getAll(null, function(filelist)
-		{
-			for(var i=0, file; file = files[i]; i++)
-				for(var j=0, file_hosted; file_hosted = filelist[j]; j++)
-					if(file.name == file_hosted.name)
-					{
-						file.bitmap = file_hosted.bitmap
-						file.blob   = file_hosted.blob || file_hosted
-
-						break;
-					}
-	
-			ui_updatefiles_peer(files)
-		})
-	})
-
 	if(onsuccess)
 		onsuccess(host);
 
@@ -57,12 +35,18 @@ function Host_init(db, onsuccess)
 
 	host._send_files_list = function(filelist)
 	{
+        // Stupid conversion because JSON.stringify() doesn't parse
+        // File objects (use them as plain objects in the best case)
+        // Maybe add a File.toString() method would do the trick,
+        // but later would not be able to store them on IndexedDB...
+        //
+        // I miss you Python :-(
 		var files_send = []
 
 		for(var i = 0, file; file = filelist[i]; i++)
 			files_send.push({"name": file.name, "size": file.size, "type": file.type});
 
-        connection.emit('files.list', JSON.stringify(files_send));
+        connection.emit('fileslist.send', JSON.stringify(files_send));
 	}
 
     host._transferbegin = function(file, onsuccess)
