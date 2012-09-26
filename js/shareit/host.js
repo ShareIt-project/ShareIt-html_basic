@@ -8,6 +8,10 @@ var chunksize = 65536
 
 function Host(db)
 {
+    EventTarget.call(this)
+
+    var self = this
+
     connection.addEventListener('peer.connected', function(socket_id)
 	{
 		ui_peerstate("Peer connected!");
@@ -24,8 +28,17 @@ function Host(db)
 
 	// Peer
 
-    this._transferbegin = function(file, onsuccess)
+    this._transferbegin = function(file)
     {
+        // Get the channel of one of the peers that have the file from its hash.
+        // Since the hash and the tracker system are currently not implemented we'll
+        // get just the channel of the peer where we got the file that we added
+        // ad-hoc before
+        function getChannel(file)
+        {
+            return file.channel
+        }
+
         // Calc number of necesary chunks to download
         var chunks = file.size/chunksize;
         if(chunks % 1 != 0)
@@ -37,15 +50,14 @@ function Host(db)
 
         // Insert new "file" inside IndexedDB
         db.sharepoints_add(file,
-        function(key)
+        function()
         {
-            if(onsuccess)
-                onsuccess(chunks);
-
-            console.log("Transfer begin: '"+key+"' = "+JSON.stringify(file))
+            self.dispatchEvent({type:"transfer.begin", data:file})
+            console.log("Transfer begin: '"+file.name+"' = "+JSON.stringify(file))
 
             // Demand data from the begining of the file
-            connection.emit('transfer.query', key, getRandom(file.bitmap))
+            getChannel(file).emit('transfer.query', file.name,
+                                                    getRandom(file.bitmap))
         },
         function(errorCode)
         {

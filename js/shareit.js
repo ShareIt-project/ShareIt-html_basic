@@ -65,13 +65,7 @@ window.addEventListener("load", function()
                     db.sharepoints_getAll(null, _updatefiles)
                 })
 
-                ui_ready_transferbegin(function(file)
-                {
-                    host._transferbegin(file, function(chunks)
-                    {
-                        ui_filedownloading(file.name, 0, chunks)
-                    })
-                })
+                ui_ready_transferbegin(host._transferbegin)
             })
 	        transport.addEventListener('joiner.error', function(type)
             {
