@@ -31,6 +31,20 @@ window.addEventListener("load", function()
         {
             transport.addEventListener('joiner.success', function()
             {
+			    transport.addEventListener('peer.connected', function(socket_id)
+			    {
+			        ui_peerstate("Peer connected!");
+
+			        db.sharepoints_getAll(null, transport._send_files_list)
+
+			        info(socket_id + " joined!");
+			    })
+
+			    transport.addEventListener('peer.disconnected', function(data)
+			    {
+			        ui_peerstate("Peer disconnected.");
+			    })
+
                 // Add connection methods to host
                 Host_onconnect(transport, host, db)
 
