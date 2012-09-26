@@ -53,37 +53,6 @@ function Host_init(db, onsuccess)
 		ui_peerstate("Peer disconnected.");
 	})
 
-	// Filereader support (be able to host files from the filesystem)
-	if(typeof FileReader == "undefined")
-		console.warn("'Filereader' is not available, can't be able to host files");
-	else
-        connection.addEventListener('transfer.query_chunk',
-        function(filename, chunk)
-		{
-			var reader = new FileReader();
-				reader.onerror = function(evt)
-				{
-					console.error("transfer.query_chunk("+filename+", "+chunk+") = '"+evt.target.result+"'")
-				}
-				reader.onload = function(evt)
-				{
-                    connection.emit('transfer.send_chunk',
-                                    filename, chunk, evt.target.result);
-				}
-
-			var start = chunk * chunksize;
-			var stop  = start + chunksize;
-
-			db.sharepoints_get(filename, function(file)
-			{
-				var filesize = parseInt(file.size);
-				if(stop > filesize)
-					stop = filesize;
-
-				reader.readAsBinaryString(file.slice(start, stop));
-			})
-		})
-
 	// Peer
 
 	function _savetodisk(file)
@@ -136,8 +105,8 @@ function Host_init(db, onsuccess)
 			    // Demand more data from one of the pending chunks
 		        db.sharepoints_put(file, function()
 		        {
-                    connection.emit('transfer.query_chunk', file.name,
-                                                            getRandom(file.bitmap));
+                    connection.emit('transfer.query', file.name,
+                                                      getRandom(file.bitmap));
 				})
 			}
 
@@ -188,7 +157,7 @@ function Host_init(db, onsuccess)
             console.log("Transfer begin: '"+key+"' = "+JSON.stringify(file))
 
             // Demand data from the begining of the file
-            connection.emit('transfer.query_chunk', key, getRandom(file.bitmap))
+            connection.emit('transfer.query', key, getRandom(file.bitmap))
         },
         function(errorCode)
         {

@@ -48,7 +48,7 @@ window.addEventListener("load", function()
 	                    // Restard downloads
 	                    for(var i = 0, file; file = filelist[i]; i++)
 	                        if(file.bitmap)
-	                            connection.emit('transfer.query_chunk',
+	                            transport.emit('transfer.query',
 	                                            file.name, getRandom(file.bitmap))
 	                })
 
