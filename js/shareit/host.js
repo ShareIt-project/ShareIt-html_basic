@@ -1,7 +1,3 @@
-Blob.slice = Blob.slice || Blob.webkitSlice || Blob.mozSlice
-if(Blob.slice != undefined)
-	alert("It won't work in your browser. Please use Chrome or Firefox.");
-
 // Filereader support (be able to host files from the filesystem)
 if(typeof FileReader == "undefined")
 	oldBrowser();
