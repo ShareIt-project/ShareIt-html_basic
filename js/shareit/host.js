@@ -6,17 +6,8 @@ if(typeof FileReader == "undefined")
 var chunksize = 65536
 
 
-function Host_init(db, onsuccess)
+function Host(db)
 {
-	var host = {}
-
-	// Peer
-
-	if(onsuccess)
-		onsuccess(host);
-
-	// Host
-
     connection.addEventListener('peer.connected', function(socket_id)
 	{
 		ui_peerstate("Peer connected!");
@@ -33,7 +24,7 @@ function Host_init(db, onsuccess)
 
 	// Peer
 
-    host._transferbegin = function(file, onsuccess)
+    this._transferbegin = function(file, onsuccess)
     {
         // Calc number of necesary chunks to download
         var chunks = file.size/chunksize;
@@ -61,7 +52,4 @@ function Host_init(db, onsuccess)
             console.error("Transfer begin: '"+file.name+"' is already in database.")
         })
     }
-
-	if(onsuccess)
-		onsuccess();
 }

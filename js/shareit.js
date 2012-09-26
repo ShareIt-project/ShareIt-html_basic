@@ -17,73 +17,72 @@ window.addEventListener("load", function()
 {
 	DB_init(function(db)
 	{
-	    Host_init(db, function(host)
-	    {
-            // Get websocket room
-	        if(!window.location.hash)
-		        window.location.hash = '#'+randomString()
+	    var host = new Host(db)
 
-	        var room = window.location.hash.substring(1)
+        // Get websocket room
+        if(!window.location.hash)
+	        window.location.hash = '#'+randomString()
 
-	        // Load websocket connection after IndexedDB is ready
-	        Transport_init(new WebSocket('wss://localhost:8001'), room,
-            function(transport)
+        var room = window.location.hash.substring(1)
+
+        // Load websocket connection after IndexedDB is ready
+        Transport_init(new WebSocket('wss://localhost:8001'), room,
+        function(transport)
+        {
+            transport.addEventListener('joiner.success', function()
             {
-                transport.addEventListener('joiner.success', function()
-	            {
-	                // Add connection methods to host
-	                Host_onconnect(transport, host, db)
+                // Add connection methods to host
+                Host_onconnect(transport, host, db)
 
-	                function _updatefiles(filelist)
-	                {
-	                    transport._send_files_list(filelist)
+                function _updatefiles(filelist)
+                {
+                    transport._send_files_list(filelist)
 
-	                    ui_updatefiles_host(filelist)
-	                }
+                    ui_updatefiles_host(filelist)
+                }
 
-	                db.sharepoints_getAll(null, function(filelist)
-	                {
-	                    _updatefiles(filelist)
+                db.sharepoints_getAll(null, function(filelist)
+                {
+                    _updatefiles(filelist)
 
-	                    // Restard downloads
-	                    for(var i = 0, file; file = filelist[i]; i++)
-	                        if(file.bitmap)
-	                            transport.emit('transfer.query',
-	                                            file.name, getRandom(file.bitmap))
-	                })
+                    // Restard downloads
+                    for(var i = 0, file; file = filelist[i]; i++)
+                        if(file.bitmap)
+                            transport.emit('transfer.query',
+                                            file.name, getRandom(file.bitmap))
+                })
 
-	                ui_onopen()
+                ui_onopen()
 
-	                ui_ready_fileschange(function(filelist)
-	                {
-	                    // Loop through the FileList and append files to list.
-	                    for(var i = 0, file; file = filelist[i]; i++)
-	                        db.sharepoints_add(file)
+                ui_ready_fileschange(function(filelist)
+                {
+                    // Loop through the FileList and append files to list.
+                    for(var i = 0, file; file = filelist[i]; i++)
+                        db.sharepoints_add(file)
 
-	                    //transport._send_files_list(filelist)   // Send just new files
+                    //transport._send_files_list(filelist)   // Send just new files
 
-	                    db.sharepoints_getAll(null, _updatefiles)
-	                })
+                    db.sharepoints_getAll(null, _updatefiles)
+                })
 
-	                ui_ready_transferbegin(function(file)
-	                {
-	                    host._transferbegin(file, function(chunks)
-	                    {
-	                        ui_filedownloading(file.name, 0, chunks)
-	                    })
-	                })
-	            })
-		        transport.addEventListener('joiner.error', function(type)
-	            {
-	                switch(type)
-	                {
-	                    case 'room full':
-	                        warning("This connection is full. Please try later.");
-	                }
-	            })
-
-		        transport.emit('joiner', room);
+                ui_ready_transferbegin(function(file)
+                {
+                    host._transferbegin(file, function(chunks)
+                    {
+                        ui_filedownloading(file.name, 0, chunks)
+                    })
+                })
             })
-	    })
+	        transport.addEventListener('joiner.error', function(type)
+            {
+                switch(type)
+                {
+                    case 'room full':
+                        warning("This connection is full. Please try later.");
+                }
+            })
+
+	        transport.emit('joiner', room);
+        })
 	})
 })
