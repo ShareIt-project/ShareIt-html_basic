@@ -4,7 +4,7 @@ function Transport_Room_init(transport, onsuccess)
     {
         transport.addEventListener('peer.connected', function(socket_id)
         {
-            ui_peerstate("Peer connected!");
+            console.info("Peer connected!");
 
             db.sharepoints_getAll(null, transport._send_files_list)
 
@@ -13,7 +13,7 @@ function Transport_Room_init(transport, onsuccess)
 
         transport.addEventListener('peer.disconnected', function(data)
         {
-            ui_peerstate("Peer disconnected.");
+            console.info("Peer disconnected.");
         })
 
         if(onsuccess)

@@ -186,8 +186,3 @@ function ui_filedownloaded(file)
 
 	console.info("Transfer finished!");
 }
-
-function ui_peerstate(msg)
-{
-	$('#peer').html(msg);
-}
