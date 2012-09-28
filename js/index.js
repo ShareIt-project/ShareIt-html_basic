@@ -13,7 +13,7 @@ function randomString()
 	return randomstring;
 }
 
-function Transport_Room_init(transport)
+function Transport_Room_init(transport, onsuccess)
 {
     transport.addEventListener('joiner.success', function()
     {
@@ -31,41 +31,8 @@ function Transport_Room_init(transport)
             ui_peerstate("Peer disconnected.");
         })
 
-        // Add connection methods to host
-        Host_onconnect(signaling, host, db)
-
-        function _updatefiles(filelist)
-        {
-            transport._send_files_list(filelist)
-
-            ui_updatefiles_host(filelist)
-        }
-
-        db.sharepoints_getAll(null, function(filelist)
-        {
-            _updatefiles(filelist)
-
-            // Restard downloads
-            for(var i = 0, file; file = filelist[i]; i++)
-                if(file.bitmap)
-                    transport.emit('transfer.query',
-                                    file.name, getRandom(file.bitmap))
-        })
-
-        ui_onopen()
-
-        ui_ready_fileschange(function(filelist)
-        {
-            // Loop through the FileList and append files to list.
-            for(var i = 0, file; file = filelist[i]; i++)
-                db.sharepoints_add(file)
-
-            //signaling._send_files_list(filelist)   // Send just new files
-
-            db.sharepoints_getAll(null, _updatefiles)
-        })
-
-        ui_ready_transferbegin(transport._transferbegin)
+        if(onsuccess)
+            onsuccess()
     })
 
     transport.addEventListener('joiner.error', function(type)
@@ -98,7 +65,45 @@ window.addEventListener("load", function()
             // Apply signaling "interface" events and functions to transport
             Transport_Signaling_init(signaling)
 
-            Transport_Room_init(signaling)
+            // Apply "interface" events to manage a room
+            Transport_Room_init(signaling, function()
+            {
+		        // Add connection methods to host
+		        Host_onconnect(signaling, host, db)
+
+		        function _updatefiles(filelist)
+		        {
+		            transport._send_files_list(filelist)
+
+		            ui_updatefiles_host(filelist)
+		        }
+
+		        db.sharepoints_getAll(null, function(filelist)
+		        {
+		            _updatefiles(filelist)
+
+		            // Restard downloads
+		            for(var i = 0, file; file = filelist[i]; i++)
+		                if(file.bitmap)
+		                    transport.emit('transfer.query',
+		                                    file.name, getRandom(file.bitmap))
+		        })
+
+		        ui_onopen()
+
+		        ui_ready_fileschange(function(filelist)
+		        {
+		            // Loop through the FileList and append files to list.
+		            for(var i = 0, file; file = filelist[i]; i++)
+		                db.sharepoints_add(file)
+
+		            //signaling._send_files_list(filelist)   // Send just new files
+
+		            db.sharepoints_getAll(null, _updatefiles)
+		        })
+
+		        ui_ready_transferbegin(transport._transferbegin)
+            })
 
 	        signaling.emit('joiner', room);
         })
