@@ -3,25 +3,40 @@ function oldBrowser()
 	$('#clicky').html('Your browser is not modern enough to serve as a host. :(<br /><br />(Try Chrome or Firefox!)');
 }
 
-function ui_onopen()
+function ui_onopen(signaling, db)
 {
+    db.sharepoints_getAll(null, function(filelist)
+    {
+        signaling._send_files_list(filelist)
+
+        ui_updatefiles_host(filelist)
+
+        // Restard downloads
+        for(var i = 0, file; file = filelist[i]; i++)
+            if(file.bitmap)
+                signaling.emit('transfer.query',
+                                file.name, getRandom(file.bitmap))
+    })
+
 	$('#clicky').html("<br /><br /><br /><br />Click here to choose files");
 	$('#fileslist').html('Awaiting file list..');
-}
 
-//$(document).ready(function()
-//{
-//	document.getElementById('files').addEventListener('change', function(event)
-//	{
-//		files_change(event.target.files); // FileList object
-//    }, false);
-//})
+    document.getElementById('files').addEventListener('change', function(event)
+    {
+        var filelist = event.target.files; // FileList object
 
-function ui_ready_fileschange(func)
-{
-	document.getElementById('files').addEventListener('change', function(event)
-	{
-		func(event.target.files); // FileList object
+        // Loop through the FileList and append files to list.
+        for(var i = 0, file; file = filelist[i]; i++)
+            db.sharepoints_add(file)
+
+        //signaling._send_files_list(filelist)   // Send just new files
+
+        db.sharepoints_getAll(null, function(filelist)
+        {
+            signaling._send_files_list(filelist)
+
+            ui_updatefiles_host(filelist)
+        })
     }, false);
 }
 
