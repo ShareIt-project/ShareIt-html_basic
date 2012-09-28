@@ -49,79 +49,76 @@ function ui_ready_fileschange(func)
     }, false);
 }
 
-var transfer_begin
-function ui_ready_transferbegin(func)
+function ui_setSignaling(signaling)
 {
-	transfer_begin = func
+	function _button(file, hosting)
+	{
+	    var div = document.createElement("DIV");
+	        div.id = file.name
+
+	    div.transfer = function()
+	    {
+	        var transfer = document.createElement("A");
+	            transfer.onclick = function()
+	            {
+	                signaling._transferbegin(file);
+	                return false;
+	            }
+	            transfer.appendChild(document.createTextNode("Transfer"));
+
+	        while(div.firstChild)
+	            div.removeChild(div.firstChild);
+	        div.appendChild(transfer);
+	    }
+	    
+	    div.progressbar = function()
+	    {
+	        var progress = document.createTextNode("0%")
+
+	        while(div.firstChild)
+	            div.removeChild(div.firstChild);
+	        div.appendChild(progress);
+	    }
+
+	    div.open = function(blob)
+	    {
+	        var open = document.createElement("A");
+	            open.href = window.URL.createObjectURL(blob)
+	            open.target = "_blank"
+	            open.appendChild(document.createTextNode("Open"));
+
+	        while(div.firstChild)
+	        {
+	            window.URL.revokeObjectURL(div.firstChild.href);
+	            div.removeChild(div.firstChild);
+	        }
+	        div.appendChild(open);
+	    }
+
+	    // Show if file have been downloaded previously or if we can transfer it
+	    if(file.bitmap)
+	    {
+	        div.progressbar()
+
+	        var chunks = file.size/chunksize;
+	        if(chunks % 1 != 0)
+	            chunks = Math.floor(chunks) + 1;
+
+	        var value = chunks - file.bitmap.length
+
+	        ui_filedownloading(file.name, value, chunks)
+	    }
+	    else if(file.blob)
+	        div.open(file.blob)
+	    else if(hosting)
+	        div.open(file)
+	    else
+	        div.transfer()
+
+	    return div
+	}
 }
 
-function _button(file, hosting)
-{
-    var div = document.createElement("DIV");
-    	div.id = file.name
-
-	div.transfer = function()
-	{
-	    var transfer = document.createElement("A");
-	    	transfer.onclick = function()
-	    	{
-	    		if(transfer_begin)
-			    	transfer_begin(file);
-		    	return false;
-	    	}
-			transfer.appendChild(document.createTextNode("Transfer"));
-
-		while(div.firstChild)
-			div.removeChild(div.firstChild);
-		div.appendChild(transfer);
-	}
-	
-	div.progressbar = function()
-	{
-		var progress = document.createTextNode("0%")
-
-		while(div.firstChild)
-			div.removeChild(div.firstChild);
-		div.appendChild(progress);
-	}
-	
-	div.open = function(blob)
-	{
-	    var open = document.createElement("A");
-	    	open.href = window.URL.createObjectURL(blob)
-	    	open.target = "_blank"
-			open.appendChild(document.createTextNode("Open"));
-
-		while(div.firstChild)
-		{
-			window.URL.revokeObjectURL(div.firstChild.href);
-			div.removeChild(div.firstChild);
-		}
-		div.appendChild(open);
-	}
-
-    // Show if file have been downloaded previously or if we can transfer it
-    if(file.bitmap)
-    {
-        div.progressbar()
-
-		var chunks = file.size/chunksize;
-		if(chunks % 1 != 0)
-			chunks = Math.floor(chunks) + 1;
-
-		var value = chunks - file.bitmap.length
-
-		ui_filedownloading(file.name, value, chunks)
-    }
-    else if(file.blob)
-        div.open(file.blob)
-    else if(hosting)
-        div.open(file)
-    else
-    	div.transfer()
-
-    return div
-}
 
 function _ui_updatefiles(area, files, hosting)
 {

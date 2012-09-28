@@ -65,7 +65,7 @@ window.addEventListener("load", function()
         // Apply signaling "interface" events and functions to transport
         Transport_Signaling_init(signaling)
 
-        ui_ready_transferbegin(signaling._transferbegin)
+        ui_setSignaling(signaling)
 
         signaling.emit('joiner', room);
 	})
