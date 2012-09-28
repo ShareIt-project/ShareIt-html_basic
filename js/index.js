@@ -48,31 +48,27 @@ function Transport_Room_init(transport, onsuccess)
 
 window.addEventListener("load", function()
 {
-	DB_init(function(db)
-	{
-        // Get room
-        if(!window.location.hash)
-	        window.location.hash = '#'+randomString()
+    // Get room
+    if(!window.location.hash)
+        window.location.hash = '#'+randomString()
 
-        var room = window.location.hash.substring(1)
+    var room = window.location.hash.substring(1)
 
-        // Load websocket connection after IndexedDB is ready
-        Transport_init(new WebSocket('wss://localhost:8001'),
-        function(signaling)
+    Transport_init(new WebSocket('wss://localhost:8001'),
+    function(signaling)
+    {
+        // Apply "interface" events to manage a room
+        Transport_Room_init(signaling, function()
         {
-            // Apply signaling "interface" events and functions to transport
-            Transport_Signaling_init(signaling)
-
-            // Apply "interface" events to manage a room
-            Transport_Room_init(signaling, function()
+            function _updatefiles(filelist)
             {
-		        function _updatefiles(filelist)
-		        {
-		            signaling._send_files_list(filelist)
+                signaling._send_files_list(filelist)
 
-		            ui_updatefiles_host(filelist)
-		        }
+                ui_updatefiles_host(filelist)
+            }
 
+			DB_init(function(db)
+			{
 		        db.sharepoints_getAll(null, function(filelist)
 		        {
 		            _updatefiles(filelist)
@@ -96,11 +92,14 @@ window.addEventListener("load", function()
 
 		            db.sharepoints_getAll(null, _updatefiles)
 		        })
-
-		        ui_ready_transferbegin(transport._transferbegin)
             })
-
-	        signaling.emit('joiner', room);
         })
+
+        // Apply signaling "interface" events and functions to transport
+        Transport_Signaling_init(signaling)
+
+        ui_ready_transferbegin(signaling._transferbegin)
+
+        signaling.emit('joiner', room);
 	})
 })
