@@ -27,30 +27,33 @@ window.addEventListener("load", function()
 
         // Load websocket connection after IndexedDB is ready
         Transport_init(new WebSocket('wss://localhost:8001'), room,
-        function(transport)
+        function(signaling)
         {
-            transport.addEventListener('joiner.success', function()
+            // Apply signaling "interface" events and functions to transport
+            Transport_Signaling_init(signaling)
+
+            signaling.addEventListener('joiner.success', function()
             {
-			    transport.addEventListener('peer.connected', function(socket_id)
+			    signaling.addEventListener('peer.connected', function(socket_id)
 			    {
 			        ui_peerstate("Peer connected!");
 
-			        db.sharepoints_getAll(null, transport._send_files_list)
+			        db.sharepoints_getAll(null, signaling._send_files_list)
 
 			        info(socket_id + " joined!");
 			    })
 
-			    transport.addEventListener('peer.disconnected', function(data)
+			    signaling.addEventListener('peer.disconnected', function(data)
 			    {
 			        ui_peerstate("Peer disconnected.");
 			    })
 
                 // Add connection methods to host
-                Host_onconnect(transport, host, db)
+                Host_onconnect(signaling, host, db)
 
                 function _updatefiles(filelist)
                 {
-                    transport._send_files_list(filelist)
+                    signaling._send_files_list(filelist)
 
                     ui_updatefiles_host(filelist)
                 }
@@ -62,7 +65,7 @@ window.addEventListener("load", function()
                     // Restard downloads
                     for(var i = 0, file; file = filelist[i]; i++)
                         if(file.bitmap)
-                            transport.emit('transfer.query',
+                            signaling.emit('transfer.query',
                                             file.name, getRandom(file.bitmap))
                 })
 
@@ -74,14 +77,14 @@ window.addEventListener("load", function()
                     for(var i = 0, file; file = filelist[i]; i++)
                         db.sharepoints_add(file)
 
-                    //transport._send_files_list(filelist)   // Send just new files
+                    //signaling._send_files_list(filelist)   // Send just new files
 
                     db.sharepoints_getAll(null, _updatefiles)
                 })
 
                 ui_ready_transferbegin(host._transferbegin)
             })
-	        transport.addEventListener('joiner.error', function(type)
+	        signaling.addEventListener('joiner.error', function(type)
             {
                 switch(type)
                 {
@@ -90,7 +93,7 @@ window.addEventListener("load", function()
                 }
             })
 
-	        transport.emit('joiner', room);
+	        signaling.emit('joiner', room);
         })
 	})
 })
