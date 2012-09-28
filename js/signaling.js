@@ -19,7 +19,7 @@ function _initDataChannel(pc, channel)
 }
 
 
-function Transport_Signaling_init(transport)
+function Transport_Signaling_init(signaling, peerConnection)
 {
     function processOffer(pc, sdp, socketId)
     {
@@ -39,7 +39,7 @@ function Transport_Signaling_init(transport)
         console.debug('connectTo() is called')
 
         // Search the peer between the list of currently connected peers
-        var pc = peers[socketId]
+        var pc = peerConnection
 
         // Peer is not connected, create a new channel
         if(!pc)
@@ -59,7 +59,7 @@ function Transport_Signaling_init(transport)
         console.debug('offer() is called')
 
         // Search the peer between the list of currently connected peers
-        var pc = peers[socketId];
+        var pc = peerConnection
 
         processOffer(pc, sdp, socketId)
     })
@@ -67,7 +67,7 @@ function Transport_Signaling_init(transport)
     signaling.addEventListener('answer', function(socketId, sdp)
     {
         // Search the peer between the list of currently connected peers
-        var pc = peers[socketId];
+        var pc = peerConnection
 
         pc.setRemoteDescription(pc.SDP_ANSWER, new SessionDescription(sdp));
     })
