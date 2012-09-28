@@ -8,7 +8,7 @@ function Transport_Room_init(transport, onsuccess)
 
             db.sharepoints_getAll(null, transport._send_files_list)
 
-            info(socket_id + " joined!");
+            console.info(socket_id + " joined!");
         })
 
         transport.addEventListener('peer.disconnected', function(data)
@@ -25,7 +25,7 @@ function Transport_Room_init(transport, onsuccess)
         switch(type)
         {
             case 'room full':
-                warning("This connection is full. Please try later.");
+                console.warn("This connection is full. Please try later.");
         }
     })
 }
