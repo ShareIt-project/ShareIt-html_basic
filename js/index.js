@@ -50,9 +50,7 @@ window.addEventListener("load", function()
 {
 	DB_init(function(db)
 	{
-	    var host = new Host(db)
-
-        // Get websocket room
+        // Get room
         if(!window.location.hash)
 	        window.location.hash = '#'+randomString()
 
@@ -68,12 +66,9 @@ window.addEventListener("load", function()
             // Apply "interface" events to manage a room
             Transport_Room_init(signaling, function()
             {
-		        // Add connection methods to host
-		        Host_onconnect(signaling, host, db)
-
 		        function _updatefiles(filelist)
 		        {
-		            transport._send_files_list(filelist)
+		            signaling._send_files_list(filelist)
 
 		            ui_updatefiles_host(filelist)
 		        }
