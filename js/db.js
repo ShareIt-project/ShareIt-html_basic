@@ -13,8 +13,6 @@ function DB_init(onsuccess)
 	    // We're going to use "hash" as our key path because it's guaranteed to
 	    // be unique.
 	    db.createObjectStore("files", { keyPath: "hash" });
-	
-	    console.debug("upgradedb");
 	}
 
 	var request = indexedDB.open("ShareIt", version);
