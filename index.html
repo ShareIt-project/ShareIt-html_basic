@@ -21,9 +21,9 @@
         <script type="text/javascript" src="js/webp2p/FileWriter.polyfill.js"></script>
 
         <script type="text/javascript" src="js/index.js"></script>
-    	<script type="text/javascript" src="js/db.js"></script>
         <script type="text/javascript" src="js/transport_room.js"></script>
         <script type="text/javascript" src="js/webp2p/bitmap.js"></script>
+        <script type="text/javascript" src="js/webp2p/db.js"></script>
     	<script type="text/javascript" src="js/webp2p/transport/index.js"></script>
         <script type="text/javascript" src="js/webp2p/transport/host.js"></script>
         <script type="text/javascript" src="js/webp2p/transport/peer.js"></script>
@@ -31,17 +31,36 @@
     	<script type="text/javascript" src="js/ui.js"></script>
     </head>
     <body>
-		<div id="body">
-	    	<div id="drop_zone" onClick="$('#files').click()" >
-	    		<div id="clicky"><br /><br /><br /><br />Loading...</div>
-	    	</div>
-	        <input type="file" id="files" name="files[]" multiple style="height: 20px; opacity: 0; filter:alpha(opacity: 0);  position: relative; top: -40px; left: -20px;" />
-    		<div id="fileslist"></div>
-
-	        <div id="peer">Awaiting peer...</div>
-	   	</div>
-
-		<div id="footer">
-        </div>
+        <table id="Downloading">
+            <thead>
+                <tr>
+                    <th scope="col" abbr="Filename" class="nobg" width="100%">Filename</th>
+                    <th scope="col" abbr="Type"     class="nobg">Type</th>
+                    <th scope="col" abbr="Size"     class="nobg">Size</th>
+                    <th scope="col" abbr="Status"   class="nobg">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td colspan="4" align="center">There are no downloads</td>
+                </tr>
+            </tbody>
+        </table>
+        <table id="Sharing"">
+            <thead>
+                <tr>
+                    <th scope="col" abbr="Filename" class="nobg" width="100%">Filename</th>
+                    <th scope="col" abbr="Type"     class="nobg">Type</th>
+                    <th scope="col" abbr="Size"     class="nobg">Size</th>
+                    <th scope="col" abbr="Status"   class="nobg">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td colspan="4" align="center">You are not sharing any file, please add a shared point on the preferences</td>
+                </tr>
+            </tbody>
+        </table>
+        <input type="file" id="files" name="files[]" multiple/>
     </body>
 </html>
