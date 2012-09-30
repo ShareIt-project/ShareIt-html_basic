@@ -1,6 +1,109 @@
 function oldBrowser()
 {
-	$('#clicky').html('Your browser is not modern enough to serve as a host. :(<br /><br />(Try Chrome or Firefox!)');
+    $('#Sharedpoints').html('Your browser is not modern enough to serve as a host. :(<br /><br />(Try Chrome or Firefox!)');
+}
+
+function _ui_filetype2className(filetype)
+{
+    filetype = filetype.split('/')
+
+    switch(filetype[0])
+    {
+        case 'image':   return "image"
+        case 'video':   return "video"
+    }
+
+    // Unknown file type, return generic file
+    return "file"
+}
+
+function _ui_row_downloading(file)
+{
+    var tr = document.createElement('TR');
+
+    var td = document.createElement('TD');
+    tr.appendChild(td)
+
+    // Name & icon
+    var span = document.createElement('SPAN');
+        span.className = _ui_filetype2className(file.type)
+        span.appendChild(document.createTextNode(file.name));
+    td.appendChild(span)
+
+    // Type
+    var td = document.createElement('TD');
+        td.appendChild(document.createTextNode(file.type));
+    tr.appendChild(td)
+
+    // Size
+    var td = document.createElement('TD');
+        td.className="filesize"
+        td.appendChild(document.createTextNode(humanize.filesize(file.size)));
+    tr.appendChild(td)
+
+    // Status
+    var td = document.createElement('TD');
+//        td.class = "end"
+        td.appendChild(document.createTextNode("Paused"));
+    tr.appendChild(td)
+
+    return tr
+}
+
+function _ui_row_sharedpoints(file)
+{
+    var tr = document.createElement('TR');
+
+    var td = document.createElement('TD');
+    tr.appendChild(td)
+
+    // Name & icon
+    var span = document.createElement('SPAN');
+        span.className = _ui_filetype2className(file.type)
+        span.appendChild(document.createTextNode(file.name));
+    td.appendChild(span)
+
+    // Shared size
+    var td = document.createElement('TD');
+        td.className="filesize"
+        td.appendChild(document.createTextNode(humanize.filesize(0)));
+    tr.appendChild(td)
+
+    var td = document.createElement('TD');
+        td.class = "end"
+    tr.appendChild(td)
+
+    var a = document.createElement("A");
+//        a.onclick = function()
+//        {
+//        }
+        a.appendChild(document.createTextNode("Delete"));
+    td.appendChild(a);
+
+    return tr
+}
+
+function _ui_updatefiles(area, files, row_factory, button_factory)
+{
+    // Remove old table and add new empty one
+    while(area.firstChild)
+        area.removeChild(area.firstChild);
+
+    for(var filename in files)
+        if(files.hasOwnProperty(filename))
+        {
+            var file = files[filename]
+            var path = ""
+            if(file.path)
+                path = file.path + '/';
+
+            var tr = row_factory(file, button_factory)
+                tr.id = path + file.name
+                if(path)
+                    tr.class = "child-of-" + path
+
+            area.appendChild(tr)
+        }
 }
 
 function ui_onopen(signaling, db)
@@ -9,7 +112,7 @@ function ui_onopen(signaling, db)
     {
         signaling._send_files_list(filelist)
 
-        ui_updatefiles_host(filelist)
+        ui_update_fileslist_downloading(filelist)
 
         // Restard downloads
         for(var i = 0, file; file = filelist[i]; i++)
@@ -18,11 +121,9 @@ function ui_onopen(signaling, db)
                                 file.name, getRandom(file.bitmap))
     })
 
-	$('#clicky').html("<br /><br /><br /><br />Click here to choose files");
-	$('#fileslist').html('Awaiting file list..');
-
     document.getElementById('files').addEventListener('change', function(event)
     {
+        alert("change")
         var filelist = event.target.files; // FileList object
 
         // Loop through the FileList and append files to list.
@@ -35,7 +136,7 @@ function ui_onopen(signaling, db)
         {
             signaling._send_files_list(filelist)
 
-            ui_updatefiles_host(filelist)
+            ui_update_fileslist_downloading(filelist)
         })
     }, false);
 }
@@ -97,7 +198,12 @@ function ui_setSignaling(signaling)
 
 	        var value = chunks - file.bitmap.length
 
-	        ui_filedownloading(file.name, value, chunks)
+		    var div = $("#" + file.name)
+
+		    if(chunks != undefined)
+		        div.total = chunks;
+
+		    div.html(Math.floor(value/div.total * 100) + '%');
 	    }
 	    else if(file.blob)
 	        div.open(file.blob)
@@ -111,93 +217,14 @@ function ui_setSignaling(signaling)
 }
 
 
-function _ui_updatefiles(area, files, hosting)
+function ui_update_fileslist_downloading(files)
 {
-	var filestable = document.createElement('TABLE');
-		filestable.id = "filestable"
-		filestable.cellspacing = 0
-		filestable.summary = ""
-
-	var tr = document.createElement('TR');
-	filestable.appendChild(tr);
-
-	var th = document.createElement('TH');
-		th.scope = "col"
-		th.abbr = "Filename"
-		th.class = "nobg"
-		th.width = "60%"
-		th.appendChild(document.createTextNode("Filename"));
-	tr.appendChild(th);
-
-	var th = document.createElement('TH');
-		th.scope = "col"
-		th.abbr = "Size"
-		th.class = "nobg"
-		th.width = "20%"
-		th.appendChild(document.createTextNode("Size"));
-	tr.appendChild(th);
-
-	var th = document.createElement('TH');
-		th.scope = "col"
-		th.abbr = "Status"
-		th.class = "nobg"
-		th.width = "20%"
-		th.appendChild(document.createTextNode("Action"));
-	tr.appendChild(th);
-
-	// Remove old table and add new empty one
-	while(area.firstChild)
-		area.removeChild(area.firstChild);
-  	area.appendChild(filestable)
-
-	for(var filename in files)
-		if(files.hasOwnProperty(filename))
-		{
-            var file = files[filename]
-
-			var tr = document.createElement('TR');
-			filestable.appendChild(tr)
-
-			var th = document.createElement('TH');
-				th.scope = "row"
-				th.class = "spec"
-				th.appendChild(document.createTextNode(file.name));
-			tr.appendChild(th)
-
-			var td = document.createElement('TD');
-				td.appendChild(document.createTextNode(file.size));
-			tr.appendChild(td)
-
-			var td = document.createElement('TD');
-				td.class = "end"
-				td.appendChild(_button(file, hosting));
-			tr.appendChild(td)
-		}
+    var area = document.getElementById('Downloading').getElementsByTagName("tbody")[0]
+    _ui_updatefiles(area, files, _ui_row_downloading)
 }
 
-function ui_updatefiles_host(files)
+function ui_update_fileslist_sharedpoints(sharedpoints)
 {
-    _ui_updatefiles(document.getElementById('clicky'), files, true)
-}
-
-function ui_updatefiles_peer(files)
-{
-    _ui_updatefiles(document.getElementById('fileslist'), files, false)
-}
-
-function ui_filedownloading(filename, value, total)
-{
-    var div = $("#" + filename)
-
-    if(total != undefined)
-        div.total = total;
-
-	div.html(Math.floor(value/div.total * 100) + '%');
-}
-
-function ui_filedownloaded(file)
-{
-	document.getElementById(file.name).open(file.blob);
-
-	console.info("Transfer finished!");
+    var area = document.getElementById('Sharedpoints').getElementsByTagName("tbody")[0]
+    _ui_updatefiles(area, sharedpoints, _ui_row_sharedpoints)
 }
