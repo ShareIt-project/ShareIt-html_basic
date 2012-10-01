@@ -15,72 +15,71 @@ function randomString()
 
 window.addEventListener("load", function()
 {
+    // Get websocket room
+    if(!window.location.hash)
+        window.location.hash = '#'+randomString()
+
+    var room = window.location.hash.substring(1)
+
 	DB_init(function(db)
 	{
-	    Host_init(db, function(host)
-	    {
-            // Get websocket room
-	        if(!window.location.hash)
-		        window.location.hash = '#'+randomString()
+	    var host = new Host(db)
 
-	        var room = window.location.hash.substring(1)
+        // Load websocket connection after IndexedDB is ready
+        Conn_init('wss://localhost:8001', room, host,
+        function(connection)
+        {
+            // Add connection methods to host
+            Host_onconnect(connection, host, db)
+        },
+        function(connection)
+        {
+			function _updatefiles(filelist)
+			{
+				host._send_files_list(filelist)
+		
+				ui_updatefiles_host(filelist)
+			}
 
-	        // Load websocket connection after IndexedDB is ready
-	        Conn_init('wss://localhost:8001', room, host,
-	        function(connection)
-	        {
-                // Add connection methods to host
-	            Host_onconnect(connection, host, db)
-	        },
-	        function(connection)
-	        {
-				function _updatefiles(filelist)
-				{
-					host._send_files_list(filelist)
-			
-					ui_updatefiles_host(filelist)
-				}
+            db.sharepoints_getAll(null, function(filelist)
+            {
+                _updatefiles(filelist)
 
-                db.sharepoints_getAll(null, function(filelist)
+                // Restard downloads
+                for(var i = 0, file; file = filelist[i]; i++)
+                    if(file.bitmap)
+                        connection.transfer_query_chunk(file.name,
+                                                        getRandom(file.bitmap))
+            })
+
+            ui_onopen()
+
+            ui_ready_fileschange(function(filelist)
+            {
+                // Loop through the FileList and append files to list.
+                for(var i = 0, file; file = filelist[i]; i++)
+	                db.sharepoints_add(file)
+
+                //host._send_files_list(filelist)	// Send just new files
+
+                db.sharepoints_getAll(null, _updatefiles)
+            })
+
+            ui_ready_transferbegin(function(file)
+            {
+                host._transferbegin(file, function(chunks)
                 {
-                    _updatefiles(filelist)
-
-                    // Restard downloads
-	                for(var i = 0, file; file = filelist[i]; i++)
-                        if(file.bitmap)
-                            connection.transfer_query_chunk(file.name,
-                                                            getRandom(file.bitmap))
+	                ui_filedownloading(file.name, 0, chunks)
                 })
-
-                ui_onopen()
-
-                ui_ready_fileschange(function(filelist)
-                {
-	                // Loop through the FileList and append files to list.
-	                for(var i = 0, file; file = filelist[i]; i++)
-		                db.sharepoints_add(file)
-
-	                //host._send_files_list(filelist)	// Send just new files
-
-	                db.sharepoints_getAll(null, _updatefiles)
-                })
-
-                ui_ready_transferbegin(function(file)
-                {
-                    host._transferbegin(file, function(chunks)
-	                {
-    	                ui_filedownloading(file.name, 0, chunks)
-	                })
-                })
-	        },
-	        function(type)
+            })
+        },
+        function(type)
+        {
+	        switch(type)
 	        {
-		        switch(type)
-		        {
-			        case 'room full':
-				        warning("This connection is full. Please try later.");
-		        }
-	        })
-	    })
+		        case 'room full':
+			        warning("This connection is full. Please try later.");
+	        }
+        })
 	})
 })
