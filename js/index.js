@@ -27,12 +27,14 @@ window.addEventListener("load", function()
 
         // Load websocket connection after IndexedDB is ready
         Conn_init('wss://localhost:8001', room, host,
-        function(connection)
+        function(signaling)
         {
+            Transport_Peer_init(signaling, db, host)
+
             // Add connection methods to host
-            Host_onconnect(connection, host, db)
+            Host_onconnect(signaling, host, db)
         },
-        function(connection)
+        function(signaling)
         {
 			function _updatefiles(filelist)
 			{
@@ -48,8 +50,8 @@ window.addEventListener("load", function()
                 // Restard downloads
                 for(var i = 0, file; file = filelist[i]; i++)
                     if(file.bitmap)
-                        connection.transfer_query_chunk(file.name,
-                                                        getRandom(file.bitmap))
+                        signaling.transfer_query_chunk(file.name,
+                                                       getRandom(file.bitmap))
             })
 
             ui_onopen()
