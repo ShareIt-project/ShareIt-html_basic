@@ -23,12 +23,13 @@ window.addEventListener("load", function()
 
 	DB_init(function(db)
 	{
+        var host = new EventTarget()
+
         // Load websocket connection after IndexedDB is ready
         Conn_init('wss://localhost:8001', room, host,
         function(signaling)
         {
-            var host = new Host(signaling, db)
-
+            Transport_Host_init(signaling, db)
             Transport_Peer_init(signaling, db, host)
 
             // Add connection methods to host
