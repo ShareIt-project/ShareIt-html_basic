@@ -21,9 +21,11 @@ window.addEventListener("load", function()
 
     var room = window.location.hash.substring(1)
 
-    Transport_init(new WebSocket('wss://localhost:8001'),
-    function(signaling)
+    var signaling = new WebSocket('wss://localhost:8001')
+    signaling.onopen = function()
     {
+        Transport_init(signaling)
+
         // Apply "interface" events to manage a room
         Transport_Room_init(signaling, function()
         {
