@@ -153,7 +153,7 @@ function ui_setSignaling(signaling)
 	        var transfer = document.createElement("A");
 	            transfer.onclick = function()
 	            {
-	                signaling._transferbegin(file);
+	                peersManager._transferbegin(file);
 	                return false;
 	            }
 	            transfer.appendChild(document.createTextNode("Transfer"));
