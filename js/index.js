@@ -15,7 +15,7 @@ function randomString()
 
 window.addEventListener("load", function()
 {
-    // Get websocket room
+    // Get room
     if(!window.location.hash)
         window.location.hash = '#'+randomString()
 
