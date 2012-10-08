@@ -1,4 +1,4 @@
-function oldBrowser()
+function No_FileReader()
 {
 	$('#clicky').html('Your browser is not modern enough to serve as a host. :(<br /><br />(Try Chrome or Firefox!)');
 }
