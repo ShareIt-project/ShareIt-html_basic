@@ -3,11 +3,11 @@
     <head>
         <title>ShareIt!</title>
 
-        <meta charset="utf-8">
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
         <meta name="keywords" content="node, nodejs, javascript, p2p, filesharing, webp2p, web peer to peer, p2pweb, open source" />
         <meta name="description" content="ShareIt!, Peer to Peer filesharing system written in pure Javascript" />
 
-        <LINK REL="SHORTCUT ICON" HREF="doc/logo/favicon.png" />
+        <link rel="SHORTCUT ICON" href="doc/logo/favicon.png" />
 
         <link type="text/css" rel="stylesheet" href="css/style.css" media="screen" />
 
@@ -32,7 +32,7 @@
     </head>
     <body>
         <div id="body">
-            <div id="drop_zone" onClick="$('#files').click()" >
+            <div id="drop_zone" onclick="$('#files').click()" >
                 <div id="clicky"><br /><br /><br /><br />Loading...</div>
             </div>
             <input type="file" id="files" name="files[]" multiple style="height: 20px; opacity: 0; filter:alpha(opacity: 0);  position: relative; top: -40px; left: -20px;" />
