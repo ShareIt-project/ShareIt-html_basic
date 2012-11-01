@@ -136,7 +136,6 @@ function _ui_updatefiles(area, files, hosting)
 	var th = document.createElement('TH');
 		th.scope = "col"
 		th.abbr = "Filename"
-		th.class = "nobg"
 		th.width = "60%"
 		th.appendChild(document.createTextNode("Filename"));
 	tr.appendChild(th);
@@ -144,7 +143,6 @@ function _ui_updatefiles(area, files, hosting)
 	var th = document.createElement('TH');
 		th.scope = "col"
 		th.abbr = "Size"
-		th.class = "nobg"
 		th.width = "20%"
 		th.appendChild(document.createTextNode("Size"));
 	tr.appendChild(th);
@@ -152,7 +150,6 @@ function _ui_updatefiles(area, files, hosting)
 	var th = document.createElement('TH');
 		th.scope = "col"
 		th.abbr = "Status"
-		th.class = "nobg"
 		th.width = "20%"
 		th.appendChild(document.createTextNode("Action"));
 	tr.appendChild(th);
